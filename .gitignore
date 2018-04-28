@@ -1,0 +1,17 @@
+local-configure.yml
+.vagrant
+docs/_build/
+roles/community/**
+._*
+bin/
+lib/
+include/
+local/
+tests.out
+*.retry
+*.log
+vbox_host.cfg
+.DS_Store
+*.py[co]
+*.swp
+
