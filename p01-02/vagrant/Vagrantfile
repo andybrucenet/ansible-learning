@@ -1,0 +1,51 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# ssh connection info
+ssh_connection_info = {
+	'private_ip' => '192.168.50.4',
+	'ansible_container_home' => '/home/worker',
+	'local_home' => '~
+	'private_key' => '
+}
+$private_ip = '192.168.50.4'
+
+# ensure python installed
+$bootstrap_script = <<-SCRIPT
+echo Setup python
+apt-get update
+apt-get install python -y
+SCRIPT
+
+# there is delay before SSH is available (sigh...)
+$waitfor_ssh = <<-SCRIPT
+
+mkdir -p /etc/ansible
+cat >> /etc/ansible/ansible.cfg <<EOF
+[defaults]
+transport=paramiko
+EOF
+SCRIPT
+
+# vagrant version 2
+Vagrant.configure("2") do |config|
+  # ubuntu box
+  config.vm.box = "minimal/xenial64"
+	config.vm.network "private_network", ip: $private_ip
+
+  # disable private key replacement so ansible can login
+  config.ssh.insert_key = false
+
+  # ansible configuration
+  config.vm.provision "shell", inline: $bootstrap_script
+  #config.vm.provision "shell", inline: $ansible_cfg
+  config.vm.provision "ansible" do |ansible|
+    ansible.compatibility_mode = "2.0"
+    #ansible.verbose = "v"
+    ansible.raw_ssh_args = ['-o IdentityFile=/home/worker/.vagrant.d/insecure_private_key']
+    ansible.raw_arguments = ['--connection=paramiko', '--private-key=/home/worker/.vagrant.d/insecure_private_key']
+    ansible.inventory_path = "./hosts"
+    ansible.playbook = "playbook.yml"
+  end
+end
+

@@ -1,0 +1,17 @@
+---
+- name: p01-02
+  hosts: all
+  become: true
+
+  vars:
+    packages: [ 'vim', 'git', 'curl' ]
+ 
+  tasks:
+ 
+  - name: Update apt-cache
+    apt: update_cache=yes
+
+  - name: Install packages
+    apt: pkg={{ item }} state=latest
+    with_items: "{{ packages }}"
+
